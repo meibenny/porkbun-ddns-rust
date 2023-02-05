@@ -7,15 +7,16 @@ struct Cli {
     config_file: std::path::PathBuf,
 }
 
-// fn get_current_ip() -> reqwest::Result<()> {
 fn get_current_ip() -> Result<String, reqwest::Error> {
-// fn get_current_ip() -> std::string::String {
-    let resp = reqwest::blocking::get("https://checkip.amazonaws.com/")?;
-    let ip = resp.text()?;
+    // let url = "https://checkip.amazonaws.com/";
+    // let resp = reqwest::blocking::get(url)?;
+    // let ip = resp.text()?;
+    let ip = "192.168.0.140".to_string();
     Ok(ip)
 }
 
-fn update_dns_entry() {
+fn update_dns_entry(current_ip: String) {
+    println!("The current ip is: {}", current_ip);
     println!("{}", "updating dns entry");
 }
 
@@ -38,5 +39,6 @@ fn main() -> Result<()> {
        Err(error) => panic!("Could not retrieve current IP: {:?}", error),
     };
     println!("{}", current_ip);
+    update_dns_entry(current_ip);
     Ok(())
 }
