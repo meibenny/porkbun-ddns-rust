@@ -1,3 +1,11 @@
 {
-    "secretkey": "secretkeyvalue"
+    "apikey": "apikey",
+    "secretkey": "secretkey",
+    "domains": [
+        {
+            "domain": "example.com",
+            "dns_entry_type": "A",
+            "subdomain": "www"
+        }
+    ]
 }
