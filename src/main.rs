@@ -1,6 +1,10 @@
 use anyhow::{Context, Result};
 use clap::Parser;
+use env_logger::{Builder, Env, Target};
+use log::{info};
 use serde::{Deserialize, Serialize};
+use std::fs::OpenOptions;
+
 
 #[derive(Parser)]
 struct Cli {
@@ -63,12 +67,14 @@ struct PorkbunUpdateDNSResponse {
 fn get_current_ip() -> Result<String, reqwest::Error> {
     let url = "https://checkip.amazonaws.com/";
     let resp = reqwest::blocking::get(url)?;
-    let ip = resp.text()?;
-    // let ip = "192.168.0.140".to_string();
+    // let ip = resp.text()?;
+    let ip = "192.168.0.140".to_string();
     Ok(ip)
 }
 
 fn get_current_dns_entry(config: &Config) -> Result<String, reqwest::Error> {
+    let ip = "192.168.0.140".to_string();
+    return Ok(ip);
     let ref secretkey = config.secretkey;
     let ref apikey = config.apikey;
     let ref domain_config = config.domains[0];
@@ -128,6 +134,17 @@ fn update_dns_entry(
 }
 
 fn main() -> Result<()> {
+    let logfile = Box::new(
+        OpenOptions::new().create(true)
+            .append(true).open("ddns_rust.log")
+            .expect("Couldn't create log file")
+    );
+    let env = Env::default()
+        .default_filter_or("info")
+        .default_write_style_or("always");
+    let mut builder = Builder::from_env(env);
+    builder.target(Target::Pipe(logfile));
+    builder.init();
     let args = Cli::parse();
     let config_path = &args.config_file;
     let config_contents = std::fs::read_to_string(config_path)
@@ -140,6 +157,6 @@ fn main() -> Result<()> {
     };
     let current_entry = get_current_dns_entry(&parsed_config).unwrap();
     let update_result = update_dns_entry(&current_ip, &current_entry, &parsed_config).unwrap();
-    println!("{}", update_result);
+    info!("{:?}", update_result);
     Ok(())
 }
