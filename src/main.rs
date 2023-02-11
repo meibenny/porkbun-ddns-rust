@@ -23,6 +23,8 @@ struct ConfigDomainsStruct {
 struct Config {
     secretkey: String,
     apikey: String,
+    discord_webhook_url: String,
+    check_ip_providers: Vec<String>,
     domains: Vec<ConfigDomainsStruct>
 }
 
@@ -64,8 +66,13 @@ struct PorkbunUpdateDNSResponse {
     message: Option<String>
 }
 
-fn get_current_ip() -> Result<String, reqwest::Error> {
-    let url = "https://checkip.amazonaws.com/";
+#[derive(Serialize, Deserialize)]
+struct DiscordMessageRequest {
+    content: String
+}
+
+fn get_current_ip(config: &Config) -> Result<String, reqwest::Error> {
+    let ref url = config.check_ip_providers[0];
     let resp = reqwest::blocking::get(url)?;
     let ip = resp.text()?;
     // let ip = "192.168.0.140".to_string();
@@ -131,6 +138,18 @@ fn update_dns_entry(
     }
 }
 
+fn update_discord(config: &Config, message: &String) -> Result<String, reqwest::Error> {
+    let ref url = config.discord_webhook_url;
+    let discord_payload = DiscordMessageRequest {
+        content: String::from(message)
+    };
+    let client = reqwest::blocking::Client::new();
+    client.post(url)
+        .json(&discord_payload)
+        .send()?;
+    Ok("Ok".to_string())
+}
+
 fn main() -> Result<()> {
     let logfile = Box::new(
         OpenOptions::new().create(true)
@@ -143,12 +162,13 @@ fn main() -> Result<()> {
     let mut builder = Builder::from_env(env);
     builder.target(Target::Pipe(logfile));
     builder.init();
+
     let args = Cli::parse();
     let config_path = &args.config_file;
     let config_contents = std::fs::read_to_string(config_path)
         .with_context(|| format!("could not read config '{}'", config_path.display()))?;
     let parsed_config: Config = serde_json::from_str(&config_contents).unwrap();
-    let current_ip_result = get_current_ip();
+    let current_ip_result = get_current_ip(&parsed_config);
     let current_ip = match current_ip_result {
        Ok(ip) => ip,
        Err(error) => panic!("Could not retrieve current IP: {:?}", error),
@@ -156,5 +176,6 @@ fn main() -> Result<()> {
     let current_entry = get_current_dns_entry(&parsed_config).unwrap();
     let update_result = update_dns_entry(&current_ip, &current_entry, &parsed_config).unwrap();
     info!("{:?}", update_result);
+    update_discord(&parsed_config, &update_result).unwrap();
     Ok(())
 }

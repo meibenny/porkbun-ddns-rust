@@ -1,6 +1,10 @@
 {
     "apikey": "apikey",
     "secretkey": "secretkey",
+    "discord_webhook_url": "https://webhookurl",
+    "check_ip_providers": [
+        "https://ipprovider"
+    ],
     "domains": [
         {
             "domain": "example.com",
