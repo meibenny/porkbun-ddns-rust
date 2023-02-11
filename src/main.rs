@@ -67,14 +67,12 @@ struct PorkbunUpdateDNSResponse {
 fn get_current_ip() -> Result<String, reqwest::Error> {
     let url = "https://checkip.amazonaws.com/";
     let resp = reqwest::blocking::get(url)?;
-    // let ip = resp.text()?;
-    let ip = "192.168.0.140".to_string();
+    let ip = resp.text()?;
+    // let ip = "192.168.0.140".to_string();
     Ok(ip)
 }
 
 fn get_current_dns_entry(config: &Config) -> Result<String, reqwest::Error> {
-    let ip = "192.168.0.140".to_string();
-    return Ok(ip);
     let ref secretkey = config.secretkey;
     let ref apikey = config.apikey;
     let ref domain_config = config.domains[0];
