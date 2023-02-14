@@ -1,7 +1,15 @@
 [package]
 name = "ddns_rust"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
+
+[[bin]]
+name = "ddns_rust"
+path = "src/main.rs"
+
+[lib]
+name = "ddns_rust"
+path = "src/lib.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -13,4 +21,7 @@ log = "0.4.17"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.92"
+
+[dev-dependencies]
+mockito = "0.32.1"
 

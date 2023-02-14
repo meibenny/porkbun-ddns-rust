@@ -1,6 +1,7 @@
 {
     "apikey": "apikey",
     "secretkey": "secretkey",
+    "porkbun_base_url": "baseurl",
     "discord_webhook_url": "https://webhookurl",
     "check_ip_providers": [
         "https://ipprovider"
