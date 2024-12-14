@@ -1,0 +1,9 @@
+/home/ubuntu/ddns_rust.log {
+    rotate 4
+    missingok
+    notifempty
+    weekly
+    nomail
+    compress
+    copytruncate
+}
