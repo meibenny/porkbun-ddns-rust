@@ -6,9 +6,14 @@ use ddns_rust::{Config, update_dns};
 
 
 #[derive(Parser)]
-#[command(version, about)]
+#[command(
+    version,
+    about = "Dnyamic DNS with Porkbun API",
+    long_about
+)]
 struct Cli {
     /// The path to the config file
+    #[arg(index = 1, required = true)]
     config_file: std::path::PathBuf,
 }
 
