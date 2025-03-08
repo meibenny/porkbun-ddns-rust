@@ -70,10 +70,9 @@ fn get_current_ip(config: &Config) -> Result<String, reqwest::Error> {
     Ok(ip)
 }
 
-fn get_current_dns_entry(config: &Config) -> Result<String, reqwest::Error> {
+fn get_current_dns_entry(domain_config: &ConfigDomainsStruct, config: &Config) -> Result<String, reqwest::Error> {
     let ref secretkey = config.secretkey;
     let ref apikey = config.apikey;
-    let ref domain_config = config.domains[0];
     let porkbun_payload = PorkbunQueryDNSRequest {
         secretapikey: String::from(secretkey),
         apikey: String::from(apikey)
@@ -94,6 +93,7 @@ fn get_current_dns_entry(config: &Config) -> Result<String, reqwest::Error> {
 fn update_dns_entry(
     current_ip: &String,
     current_dns_entry: &String,
+    domain_config: &ConfigDomainsStruct,
     config: &Config
 ) -> Result<String, reqwest::Error> {
     if current_ip.eq(current_dns_entry) {
@@ -106,7 +106,6 @@ fn update_dns_entry(
     }
     let ref secretkey = config.secretkey;
     let ref apikey = config.apikey;
-    let ref domain_config = config.domains[0];
     let url = &format!(
         "{}/editByNameType/{}/{}/{}",
         &config.porkbun_base_url, domain_config.domain, domain_config.dns_entry_type, domain_config.subdomain
@@ -141,14 +140,23 @@ fn update_discord(config: &Config, message: &String) -> Result<String, reqwest::
     Ok("Ok".to_string())
 }
 
-pub fn update_dns(config: &Config) -> Result<String> {
+pub fn update_dns(config: &Config) -> Result<Vec<String>> {
     let current_ip_result = get_current_ip(&config);
     let current_ip = match current_ip_result {
        Ok(ip) => ip,
        Err(error) => panic!("Could not retrieve current IP: {:?}", error),
     };
-    let current_entry = get_current_dns_entry(&config).unwrap();
-    let update_result = update_dns_entry(&current_ip, &current_entry, &config).unwrap();
-    update_discord(&config, &update_result).unwrap();
-    Ok(update_result.to_string())
+    let mut update_results = Vec::new();
+    let domains = &config.domains;
+    let domain_iter = domains.iter();
+    for domain_config in domain_iter {
+        let domain = &domain_config.domain;
+        let current_entry = get_current_dns_entry(&domain_config, &config).unwrap();
+        let update_result = update_dns_entry(&current_ip, &current_entry, &domain_config, &config).unwrap();
+        let domain_string = format!("{domain}: ");
+        let update_message = domain_string.to_owned() + &update_result;
+        update_discord(&config, &update_message).unwrap();
+        update_results.push(update_message);
+    }
+    Ok(update_results)
 }

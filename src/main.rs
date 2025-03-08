@@ -30,7 +30,9 @@ fn main() -> Result<()> {
     let config_contents = std::fs::read_to_string(config_path)
         .with_context(|| format!("could not read config '{}'", config_path.display()))?;
     let parsed_config: Config = serde_json::from_str(&config_contents).unwrap();
-    let update_result = update_dns(&parsed_config).unwrap();
-    info!("{:?}", update_result.trim_end_matches("\n"));
+    let update_results = update_dns(&parsed_config).unwrap();
+    for result in update_results.iter() {
+        info!("{:?}", result.trim_end_matches("\n"));
+    }
     Ok(())
 }
