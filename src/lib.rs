@@ -153,7 +153,7 @@ pub fn update_dns(config: &Config) -> Result<Vec<String>> {
         let domain = &domain_config.domain;
         let current_entry = get_current_dns_entry(&domain_config, &config).unwrap();
         let update_result = update_dns_entry(&current_ip, &current_entry, &domain_config, &config).unwrap();
-        let domain_string = format!("{domain}: ");
+        let domain_string = format!("{0}.{1}: ", domain_config.subdomain, domain);
         let update_message = domain_string.to_owned() + &update_result;
         update_discord(&config, &update_message).unwrap();
         update_results.push(update_message);
